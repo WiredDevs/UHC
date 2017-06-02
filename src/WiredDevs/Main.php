@@ -32,21 +32,25 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\tag\IntArrayTag;
 class Main extends PluginBase implements Listener {
 
-    public $active;
 
     //*queues*//
 
     public $uhc = array();
     public $canMove = FALSE;
     public $players = array();
+
     public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getServer()->getPluginManager()->registerEvents(new EventHandler($this), $this);
+        $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+        $this->cfg->set("Active", "false");
+        $this->cfg->save();
     
     }
 
     public function onDisable() {
-        $this->active = false;
+        $this->cfg->set("Active", "false");
+        $this->cfg->save();
     }
 
 
@@ -66,7 +70,7 @@ class Main extends PluginBase implements Listener {
     //
 
     public function isGameActive() {
-        if($this->active = true){
+        if($this->cfg->get("Active") === "true"){
             return true;
         }else {
             return false;
@@ -90,7 +94,8 @@ class Main extends PluginBase implements Listener {
                 $player1->sendMessage(TF::RED."Currently waiting on ". count($this->uhc));
             }
 
-        $this->active = true;
+        $this->cfg->set("Active", "true");
+        $this->cfg->save();
         // Create a new countdowntask
         $task = new CountDownTask($this);
         $this->countdownTask = $this->getServer()->getScheduler()->scheduleDelayedRepeatingTask($task, 20, 20);
@@ -141,13 +146,14 @@ class Main extends PluginBase implements Listener {
 
     public function abortUHC() {
         $this->getScheduler()->cancelTask($this->countdownTask->getTaskId()); 
-        $this->active = false;
+        $this->cfg->set("Active", "false");
+        $this->cfg->save();
     }
 
     public function startUHC($player) {
         $level = $this->getServer()->getLevelByName("UHC");
         $this->scatter($player, 250, $level);
-        $this->canMove = true;
+
     }
 
     public function addToUHC($player) {
@@ -166,7 +172,8 @@ class Main extends PluginBase implements Listener {
     }
 
     public function endUHC($player) {
-
+        $this->cfg->set("Active", "false");
+        $this->cfg->save();
     }
 }
 
@@ -184,6 +191,7 @@ class CountDownTask extends PluginTask{
     
     public function onRun($currentTick){
         $players = array($this->plugin->players[0], $this->plugin->players[1], $this->plugin->players[2], $this->plugin->players[3], $this->plugin->players[4], $this->plugin->players[5], $this->plugin->players[6], $this->plugin->players[7], $this->plugin->players[8]);
+        //$players = array($this->plugin->players[0], $this->plugin->players[1]);
         foreach($players as $player){
             if(count($this->plugin->uhc) < 8){
                 $player->sendMessage(TF::RED."Someone left, countdown cancelled");
