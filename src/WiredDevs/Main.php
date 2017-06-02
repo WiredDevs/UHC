@@ -90,8 +90,8 @@ class Main extends PluginBase implements Listener {
         $player8 = $players[8];
         $p = array($this->players[0], $this->players[1], $this->players[2], $this->players[3], $this->players[4], $this->players[5], $this->players[6], $this->players[7], $this->players[8]);
         foreach($p as $a){
-            if(count($this->uhc) < 0){
-                $player1->sendMessage(TF::RED."Currently waiting on ". count($this->uhc));
+            if($this->getNumberOfPlayersInQueue() < 8){
+                $a->sendMessage(TF::RED."Currently waiting on ". count($this->uhc));
             }
 
         $this->cfg->set("Active", "true");
@@ -99,7 +99,7 @@ class Main extends PluginBase implements Listener {
         // Create a new countdowntask
         $task = new CountDownTask($this);
         $this->countdownTask = $this->getServer()->getScheduler()->scheduleDelayedRepeatingTask($task, 20, 20);
-        $player1->sendMessage("uhc starting....");   
+        $a->sendMessage("uhc starting....");   
         }
 
         
